@@ -130,3 +130,39 @@ def test_unregister_returns_not_found_for_unknown_activity(client):
     # Assert
     assert response.status_code == 404
     assert response.json()["detail"] == "Activity not found"
+
+
+def test_get_orders_returns_only_orders_for_customer(client):
+    # Arrange
+    customer_id = "customer-1001"
+
+    # Act
+    response = client.get("/orders", params={"customerId": customer_id})
+
+    # Assert
+    assert response.status_code == 200
+    assert [order["orderId"] for order in response.json()] == ["order-1001", "order-1002"]
+    assert all(order["customerId"] == customer_id for order in response.json())
+
+
+def test_get_orders_returns_empty_list_when_customer_has_no_orders(client):
+    # Arrange
+    customer_id = "customer-with-no-orders"
+
+    # Act
+    response = client.get("/orders", params={"customerId": customer_id})
+
+    # Assert
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_get_orders_requires_customer_id(client):
+    # Arrange
+    request_params = {}
+
+    # Act
+    response = client.get("/orders", params=request_params)
+
+    # Assert
+    assert response.status_code == 422

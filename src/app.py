@@ -5,7 +5,7 @@ A super simple FastAPI application that allows students to view and sign up
 for extracurricular activities at Mergington High School.
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
@@ -77,6 +77,30 @@ activities = {
     }
 }
 
+orders = [
+    {
+        "orderId": "order-1001",
+        "customerId": "customer-1001",
+        "items": [{"productId": "product-01", "name": "Wireless Mouse", "quantity": 1, "unitPrice": 24.99}],
+        "status": "shipped",
+        "total": 24.99,
+    },
+    {
+        "orderId": "order-1002",
+        "customerId": "customer-1001",
+        "items": [{"productId": "product-02", "name": "Keyboard", "quantity": 1, "unitPrice": 49.99}],
+        "status": "processing",
+        "total": 49.99,
+    },
+    {
+        "orderId": "order-2001",
+        "customerId": "customer-2001",
+        "items": [{"productId": "product-03", "name": "USB-C Cable", "quantity": 2, "unitPrice": 9.99}],
+        "status": "delivered",
+        "total": 19.98,
+    },
+]
+
 
 @app.get("/")
 def root():
@@ -86,6 +110,12 @@ def root():
 @app.get("/activities")
 def get_activities():
     return activities
+
+
+@app.get("/orders")
+def get_orders(customer_id: str = Query(alias="customerId", min_length=1)):
+    """Return orders belonging to the requested customer."""
+    return [order for order in orders if order["customerId"] == customer_id]
 
 
 @app.post("/activities/{activity_name}/signup")
